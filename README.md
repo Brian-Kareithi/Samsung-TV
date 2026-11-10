@@ -1,12 +1,12 @@
 # Samsung-TV
 
-Idle screen for a Samsung Tizen TV: big clock, Nairobi weather, rotating F1 & Le Mans wallpapers and tech jokes in a blurred card. A Python watcher serves the page and opens it full screen on the TV after a few idle minutes, via samsung-tv-ws-api.
+Idle screen for a Samsung Tizen TV: big clock, Nairobi weather, rotating motorsport wallpapers (Formula 1, 24 Heures du Mans, GT3, NASCAR, Rolex 24 at Daytona, Rally, IMSA) and tech jokes in a blurred card. A Python watcher serves the page and opens it full screen on the TV after a few idle minutes, via samsung-tv-ws-api.
 
 ## What it shows
 
 * **Big clock** — current time in Nairobi (East Africa Time), independent of the TV's own clock settings, with seconds and date.
 * **Nairobi weather** — temperature, conditions and today's high/low from Open-Meteo (no API key needed), refreshed every 15 minutes.
-* **Rotating wallpapers** — Formula 1 and 24 Heures du Mans photos from Wikimedia Commons, with a slow Ken Burns drift and a progress bar per slide.
+* **Rotating wallpapers** — motorsport photos from Wikimedia Commons (Formula 1, 24 Heures du Mans, GT3, NASCAR, Daytona, Rally, IMSA), each labelled with its series and photographer credit, with a slow Ken Burns drift and a progress bar per slide.
 * **Tech jokes** — a blurred "glass" card (`// tech.joke()`) cycling through a local deck of programming/IT jokes, mixed with jokes from JokeAPI when online.
 
 ## How it works
@@ -24,7 +24,7 @@ The TV can't report its input or a "No Signal" state, so "idle" means: the TV is
 * `screen/index.html` — the idle screen (ES5, written for the 2018 Tizen browser)
 * `screen/photos.js` — wallpaper list (F1 and Le Mans, with photo credits)
 * `screen/quotes.js` — local tech-joke deck
-* `screen/img/` — F1 (`f1*.jpg`) and Le Mans (`lm*.jpg`) wallpapers
+* `screen/img/` — motorsport wallpapers covering Formula 1, Le Mans, GT3, NASCAR, Daytona, Rally and IMSA, each with photographer credit
 * `.gitignore` — ignores the TV pairing token, watcher log and `__pycache__`
 
 ## Requirements
