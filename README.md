@@ -13,7 +13,8 @@ Idle screen for a Samsung Tizen TV: big clock, Nairobi weather, rotating motorsp
 * **Big clock** — current time in Nairobi (East Africa Time), independent of the TV's own clock settings, with a seconds chip and the date.
 * **Nairobi weather** — temperature, conditions, today's high/low and humidity from Open-Meteo (no API key needed), refreshed every 15 minutes.
 * **Rotating wallpapers** — 243 hand-picked race-action photos from Wikimedia Commons, each labelled with its series and photographer credit, changing every 20 seconds with a slow Ken Burns drift and a progress bar.
-* **Tech jokes** — a blurred "glass" card (`// tech.joke(001)`) under the weather with a new joke on every photo change: a local deck of 154 programming/IT jokes mixed with safe-mode programming jokes from JokeAPI when online.
+* **Typed wordmark** — `</> ICT DEPARTMENT` and `// software development` type themselves out like someone working in an editor: human-paced keystrokes, the occasional typo that gets backspaced, a solid cursor while typing and a blinking one while idle. Every 45 seconds it's erased and retyped.
+* **Tech jokes** — a blurred "glass" card (`// tech.joke(001)`) under the weather with a new joke on every photo change. The deck holds 312 office-safe programming/IT jokes, including reviewed ones adapted from JokeAPI. It's shuffled and doesn't repeat until all of them have been shown (about 1 hour 45 minutes).
 
 | Series | Photos | Label |
 |---|---|---|
@@ -85,6 +86,7 @@ It starts the watcher hidden at every sign-in and logs to `ict_screen.log`.
 * City and timezone — `CITY` and `UTC_OFFSET_HOURS` in `screen/index.html`
 * Photo time — `SLIDE_SECONDS` (default 20) in `screen/index.html`
 * Jokes — add lines to `screen/quotes.js`
+* Wordmark text and retype interval — `LINES` and `HOLD_SECONDS` in `screen/index.html`
 
 Tip: reserve the TV's and PC's IP addresses in your router so they don't change.
 

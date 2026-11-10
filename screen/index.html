@@ -28,11 +28,16 @@
 
   /* Wordmark, top left */
   .brand { position: absolute; left: 76px; top: 58px; }
-  .brand-name { font-size: 58px; font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 1px; line-height: 1; }
-  .brand-name .tag { color: #ffd400; font-family: "JetBrains Mono", Consolas, monospace; font-style: normal; font-weight: 700; font-size: 44px; margin-right: 14px; position: relative; top: -4px; }
-  .brand-sub { margin-top: 10px; font-size: 20px; color: rgba(242,239,230,.7); }
-  .brand-sub .cursor { display: inline-block; width: 11px; height: 22px; background: #ffd400; margin-left: 6px; vertical-align: -4px;
-    -webkit-animation: blink 1.1s steps(1) infinite; animation: blink 1.1s steps(1) infinite; }
+  .brand-name { min-height: 58px; font-size: 58px; font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 1px; line-height: 1; white-space: nowrap; }
+  .brand-name .tag { color: #ffd400; font-family: "JetBrains Mono", Consolas, monospace; font-style: normal; font-weight: 700; font-size: 44px; position: relative; top: -4px; }
+  #t-name { margin-left: 14px; }
+  .brand-sub { min-height: 24px; margin-top: 10px; font-size: 20px; color: rgba(242,239,230,.7); white-space: nowrap; }
+
+  /* Editor-style cursor: solid while typing, blinking while idle. */
+  .cursor { display: inline-block; background: #ffd400; -webkit-animation: blink 1.1s steps(1) infinite; animation: blink 1.1s steps(1) infinite; }
+  .cursor.solid { -webkit-animation: none; animation: none; }
+  .brand-name .cursor { width: 22px; height: 50px; margin-left: 6px; vertical-align: -4px; -webkit-transform: skewX(-10deg); transform: skewX(-10deg); }
+  .brand-sub .cursor { width: 11px; height: 22px; margin-left: 4px; vertical-align: -4px; }
   @-webkit-keyframes blink { 50% { opacity: 0; } }
   @keyframes blink { 50% { opacity: 0; } }
 
@@ -83,8 +88,8 @@
 <div class="shade-bot"></div>
 
 <div class="brand">
-  <div class="brand-name"><span class="tag">&lt;/&gt;</span>ICT Department</div>
-  <div class="brand-sub mono">// software development<span class="cursor"></span></div>
+  <div class="brand-name"><span class="tag" id="t-tag"></span><span id="t-name"></span></div>
+  <div class="brand-sub mono"><span id="t-sub"></span></div>
 </div>
 
 <div class="weather">
@@ -140,6 +145,60 @@
   tick();
   setInterval(tick, 1000);
 
+  // ---- Wordmark, typed out like someone working in an editor ----
+  var LINES = [['t-tag', '</>'], ['t-name', 'ICT Department'], ['t-sub', '// software development']];
+  var HOLD_SECONDS = 45;               // how long the finished wordmark stays before it's retyped
+  var KEYS = 'qwertyuiopasdfghjklzxcvbnm';
+  var cursor = document.createElement('span'), steps = [];
+  cursor.className = 'cursor';
+
+  function step(fn, wait) { steps.push([fn, wait]); }
+  function human(base) { return base * (0.6 + Math.random() * 1.2); }
+  function cursorAfter(el, solid) {
+    return function () {
+      el.parentNode.insertBefore(cursor, el.nextSibling);
+      cursor.className = solid ? 'cursor solid' : 'cursor';
+    };
+  }
+  function typeLine(id, text, typoAt) {
+    var el = $(id);
+    step(cursorAfter(el, true), human(250));
+    for (var i = 0; i < text.length; i++) (function (ch, i) {
+      if (i === typoAt) {
+        // Hit a wrong key, notice it, backspace.
+        var wrong = KEYS.charAt(Math.floor(Math.random() * KEYS.length));
+        step(function () { el.textContent += wrong; }, human(420));
+        step(function () { el.textContent = el.textContent.slice(0, -1); }, human(120));
+      }
+      step(function () { el.textContent += ch; }, ch === ' ' ? human(150) : human(85));
+    })(text.charAt(i), i);
+  }
+  function eraseLine(id, length) {
+    var el = $(id);
+    step(cursorAfter(el, true), 180);
+    for (var i = 0; i < length; i++) step(function () { el.textContent = el.textContent.slice(0, -1); }, 32);
+  }
+  function plan() {
+    var i, sub = LINES[2][1], name = LINES[1][1];
+    for (i = 0; i < LINES.length; i++) {
+      var typo = -1;
+      if (i === 2 && Math.random() < 0.5) typo = 4 + Math.floor(Math.random() * (sub.length - 6));
+      if (i === 1 && Math.random() < 0.25) typo = 2 + Math.floor(Math.random() * (name.length - 4));
+      typeLine(LINES[i][0], LINES[i][1], typo);
+      step(function () {}, i === 0 ? 300 : 500);
+    }
+    step(cursorAfter($('t-sub'), false), HOLD_SECONDS * 1000);
+    for (i = LINES.length - 1; i >= 0; i--) eraseLine(LINES[i][0], LINES[i][1].length);
+    step(function () {}, 700);
+  }
+  function play() {
+    if (!steps.length) plan();
+    var s = steps.shift();
+    s[0]();
+    setTimeout(play, s[1]);
+  }
+  play();
+
   // ---- Weather (Open-Meteo, no key needed) ----
   function describe(code) {
     if (code === 0) return 'Clear';
@@ -177,40 +236,16 @@
     return a;
   }
 
-  // ---- Quotes: the local deck, mixed with programming jokes from JokeAPI when online ----
-  var deck = [], online = [], seen = {}, fromOnline = false, jokeNo = 0;
-  function refillOnline() {
-    var x = new XMLHttpRequest();
-    x.open('GET', 'https://v2.jokeapi.dev/joke/Programming?safe-mode&blacklistFlags=nsfw,religious,political,racist,sexist,explicit&amount=10');
-    x.onload = function () {
-      try {
-        var jokes = JSON.parse(x.responseText).jokes || [];
-        for (var i = 0; i < jokes.length; i++) {
-          var j = jokes[i], q = j.type === 'twopart' ? [j.setup, j.delivery] : [j.joke, ''];
-          var text = q[0] + q[1];
-          if (seen[j.id] || text.length > 150 || /\n/.test(text)) continue;
-          seen[j.id] = true;
-          online.push(q);
-        }
-      } catch (e) {}
-    };
-    x.send();
-  }
+  // ---- Quotes: a reviewed, office-safe deck, shuffled and shown without repeats ----
+  var deck = [], jokeNo = 0;
   function splitJoke(s) {
     // "Why ...? Because ..." reads better as a setup and a punchline.
     var m = /^((?:Why|What|How|Where|Who)[^?]*\?)\s+(.+)$/.exec(s);
     return m ? [m[1], m[2]] : [s, ''];
   }
   function nextQuote() {
-    var q;
-    fromOnline = !fromOnline;
-    if (fromOnline && online.length) q = online.shift();
-    else {
-      if (!deck.length) deck = shuffle((window.QUOTES || []).slice());
-      q = splitJoke(deck.pop() || '');
-    }
-    if (online.length < 4) refillOnline();
-    return q;
+    if (!deck.length) deck = shuffle((window.QUOTES || []).slice());
+    return splitJoke(deck.pop() || '');
   }
   function showQuote() {
     var q = nextQuote(), body = $('q-body');
@@ -223,8 +258,6 @@
       body.className = 'q-body';
     }, 500);
   }
-  refillOnline();
-
   // Line the blurred copy up with the real photo behind the box.
   var qbg = $('q-bg'), qbox = $('quote');
   qbg.style.left = -qbox.offsetLeft + 'px';
